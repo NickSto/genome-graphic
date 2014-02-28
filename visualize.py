@@ -1,6 +1,10 @@
 #!/usr/bin/python
 
-import Image, ImageDraw, sys, random, hashlib
+import sys
+import random
+import hashlib
+import Image
+import ImageDraw
 
 def main():
 
@@ -32,7 +36,8 @@ recommended as the resulting image will be much better laid out."""
   while 1:
     level+=1
     layers.append(draw_layer(size, level))
-    if layers[-1] == False: break
+    if layers[-1] == False:
+      break
     # opacity = 256/2**level                        # opacity #1
     # opacity = 256/2**(level-1)                    # opacity #2
     # opacity = 256*(level/2)/2**(level-1)          # opacity #3
