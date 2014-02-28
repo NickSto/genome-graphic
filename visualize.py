@@ -1,17 +1,81 @@
 #!/usr/bin/python
-# archive note: this was after I'd figured out how to (recursively) do every layer correctly
-# and just after I figured out transparency. It's the last point before I re-wrote it to be
-# iterative instead of recursive.
 
-import Image, ImageDraw, sys, random
+import Image, ImageDraw, sys, random, hashlib
 
 def main():
 
-  image = Image.new("RGB", (512,512), (0,0,0))
+  if len(sys.argv) == 1:
+    print """USAGE:
+  $ ./visualize.py genome.fa outfile.png pxsize
+The last two arguments are optional, but must be in those positions.
+If no outfile name is given, it will attempt to display the image directly.
+If no pxsize is given, the default is 512x512. A power of 2 is highly
+recommended as the resulting image will be much better laid out."""
+    sys.exit(0)
 
-  drawblocks(image, 1, (0,0), (512,512))
+  DEFAULT_SIZE = (512,512)
+  size = DEFAULT_SIZE
+  if len(sys.argv) > 3:
+    user_size = int(sys.argv[3])
+    size = (user_size,user_size)
 
-  image.show()
+  # can skip hashing and specify the seed as an option (for testing)
+  if len(sys.argv) > 4:
+    seed = sys.argv[4]
+  else:
+    seed = get_hash()
+  print "seed: "+seed
+  random.seed(seed)
+  level = 1
+  layers = []
+  image = draw_layer(size, level)
+  while 1:
+    level+=1
+    layers.append(draw_layer(size, level))
+    if layers[-1] == False: break
+    # opacity = 256/2**level                        # opacity #1
+    # opacity = 256/2**(level-1)                    # opacity #2
+    # opacity = 256*(level/2)/2**(level-1)          # opacity #3
+    opacity = 256*(level/float(2**level))         # opacity #4
+    print "opacity: "+str(int(opacity/2.56))+"%"
+    mask = Image.new("L", size, color=opacity)
+    image.paste(layers[-1], (0,0), mask)
+
+  if len(sys.argv) > 2:
+    image.save(sys.argv[2])
+  else:
+    image.show()
+
+def draw_layer(image_size, level):
+  """Draw every block for a particular layer
+  (blocks of a particular pixel size).
+  Returns an image of the finished layer."""
+  (image_width,image_height) = image_size
+  (width, height) = block_size(image_size, level)
+  if width < 1 or height < 1:
+    return False
+  print "width, height: "+str(width)+", "+str(height)
+  layer = Image.new("RGB", image_size, (0,0,0))
+  draw = ImageDraw.Draw(layer)
+  (x,y) = (0,0)
+  while y < image_height:
+    while x < image_width:
+      draw.rectangle([(x,y), (x+width-1, y+height-1)], fill=randcolor())
+      x += width
+    y += height
+    x = 0
+  return layer
+
+def get_hash():
+  """Compute hash function of the file"""
+  hash = hashlib.sha256()
+  filename = sys.argv[1]
+
+  with open(filename, 'rb') as file:
+    for chunk in iter(lambda: file.read(65536), b''):
+      hash.update(chunk)
+
+  return hash.hexdigest()
 
 def randcolor():
   """Return a tuple of random color values"""
@@ -20,52 +84,35 @@ def randcolor():
     color.append(random.randrange(0,255))
   return tuple(color)
 
-def drawblocks(image, level, start, size):
-  """Draw 8 color blocks inside a given rectangle.
-  start = tuple of upper left corner coordinates
-  size = tuple of (width,height) of block
-  Returns True if it drew a new set of blocks, False if it did not because the
-  block width or height would have been smaller than 1 pixel."""
-  if start == (0,0):
-    print "inside drawblocks(draw, "+str(start)+", "+str(size)+")"
-  (xstart,ystart) = start
-  (width,height) = size
-  if width/height == 2:
-    sub_width = width/4
-    sub_height = height/2
-  elif width/height == 1:
-    sub_width = width/2
-    sub_height = height/4
-  else:
-    sys.stderr.write("Error: asked to draw a block of unexpected aspect ratio: "
-      +"width/height = "+str(width/height)+"\n")
-    return
-  if start == (0,0):
-    print "divided size into "+str((sub_width,sub_height))
-  if sub_width < 4 or sub_height < 4:
-    return False
+def block_size(image_size, level):
+  """Compute the block width and height for this layer."""
+  (width,height) = image_size
+  while level > 0:
+    width = width/2
+    height = height/4
+    level-=1
+    if level < 1: break
+    width = width/4
+    height = height/2
+    level-=1
+  return (width,height)
 
-  (x,y) = (xstart,ystart)
-  while y < ystart+height:
-    while x < xstart+width:
-      if start == (0,0):
-        print "drawing rectangle pos:"+str((x,y))+"\tsize: " \
-          +str((x+sub_width-1, y+sub_height-1))
-      #if start == (0,0):
-      overlay = Image.new("RGB", image.size, color=(0,0,0))
-      mask = Image.new("L", image.size, color=0)
-      overdraw = ImageDraw.Draw(overlay)
-      maskdraw = ImageDraw.Draw(mask)
-      overdraw.rectangle([(x,y), (x+sub_width-1, y+sub_height-1)],
-        fill=randcolor())
-      maskdraw.rectangle([(x,y), (x+sub_width-1, y+sub_height-1)],
-        fill=(256/level)-1)
-      image.paste(overlay, (0,0), mask)
-      drawblocks(image, level*2, (x,y), (sub_width,sub_height))
-      x += sub_width
-    y += sub_height
-    x = xstart
-  return True
+def format_genome():
+  """Eventually I'd like to attempt to process the genome file into a standard
+  format, stripping out details of representation that can change the output,
+  such as:
+    - upper/lowercase
+    - line endings
+    - chromosome naming
+    - chromosome order
+    - noncanonical chromosomes"""
+
+def check_genome():
+  """Eventually I'd like this to check assumptions I might make about the
+  genome file. A first check would be that it contains all the chromosomes, in
+  the format ''>chr1' or ''>1'. If these assumptions (which format_genome()
+  depends on) aren't met, and the format isn't recognized, then default to a
+  straight digest of the unmodified file."""
 
 if __name__ == "__main__":
   main()
