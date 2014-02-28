@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 import sys
 import random
 import hashlib
@@ -13,7 +12,7 @@ def main():
   $ ./visualize.py genome.fa outfile.png pxsize
 The last two arguments are optional, but must be in those positions.
 If no outfile name is given, it will attempt to display the image directly.
-If no pxsize is given, the default is 512x512. A power of 2 is highly
+If no pxsize is given, the default is 512. A power of 2 is highly
 recommended as the resulting image will be much better laid out."""
     sys.exit(0)
 
@@ -27,7 +26,7 @@ recommended as the resulting image will be much better laid out."""
   if len(sys.argv) > 4:
     seed = sys.argv[4]
   else:
-    seed = get_hash()
+    seed = get_hash(sys.argv[1])
   print "seed: "+seed
   random.seed(seed)
   level = 1
@@ -71,16 +70,13 @@ def draw_layer(image_size, level):
     x = 0
   return layer
 
-def get_hash():
-  """Compute hash function of the file"""
-  hash = hashlib.sha256()
-  filename = sys.argv[1]
-
-  with open(filename, 'rb') as file:
-    for chunk in iter(lambda: file.read(65536), b''):
-      hash.update(chunk)
-
-  return hash.hexdigest()
+def get_hash(filepath):
+  """Compute hash of the file"""
+  hashed = hashlib.sha256()
+  with open(filepath, 'rb') as filehandle:
+    for chunk in iter(lambda: filehandle.read(65536), b''):
+      hashed.update(chunk)
+  return hashed.hexdigest()
 
 def randcolor():
   """Return a tuple of random color values"""
@@ -96,7 +92,8 @@ def block_size(image_size, level):
     width = width/2
     height = height/4
     level-=1
-    if level < 1: break
+    if level < 1:
+      break
     width = width/4
     height = height/2
     level-=1
