@@ -1,42 +1,32 @@
 #!/usr/bin/python
-# archive note: this was when I was figuring out a problem with the tiling,
-# and had lots of debug statements
+# archive note: this was after I'd figured out how to (recursively) do every layer correctly
+# and just after I figured out transparency. It's the last point before I re-wrote it to be
+# iterative instead of recursive.
 
 import Image, ImageDraw, sys, random
 
 def main():
 
-  counts = {256:0, 64:0, 32:0, 8:0}
+  image = Image.new("RGB", (512,512), (0,0,0))
 
-  im = Image.new('RGB', (512,512), (0,0,0))
-  draw = ImageDraw.Draw(im)
+  drawblocks(image, 1, (0,0), (512,512))
 
-  drawblocks(draw, (0,0), (512,512), counts)
-
-  print "256x128: "+str(counts[256])
-  print "64x64: "+str(counts[64])
-  print "32x16: "+str(counts[32])
-  print "8x8: "+str(counts[8])
-
-
-  del draw
-
-  im.show()
+  image.show()
 
 def randcolor():
-  """Return a random color tuple"""
+  """Return a tuple of random color values"""
   color = []
   for i in range(3):
     color.append(random.randrange(0,255))
   return tuple(color)
 
-def drawblocks(draw, start, size, counts):
+def drawblocks(image, level, start, size):
   """Draw 8 color blocks inside a given rectangle.
   start = tuple of upper left corner coordinates
   size = tuple of (width,height) of block
   Returns True if it drew a new set of blocks, False if it did not because the
   block width or height would have been smaller than 1 pixel."""
-  if start == (256,0):
+  if start == (0,0):
     print "inside drawblocks(draw, "+str(start)+", "+str(size)+")"
   (xstart,ystart) = start
   (width,height) = size
@@ -50,39 +40,31 @@ def drawblocks(draw, start, size, counts):
     sys.stderr.write("Error: asked to draw a block of unexpected aspect ratio: "
       +"width/height = "+str(width/height)+"\n")
     return
-  if start == (256,0):
+  if start == (0,0):
     print "divided size into "+str((sub_width,sub_height))
-  if sub_width < 8 or sub_height < 8:
+  if sub_width < 4 or sub_height < 4:
     return False
-  if start == (256,0):
-    print "we're not too small"
 
   (x,y) = (xstart,ystart)
   while y < ystart+height:
     while x < xstart+width:
-      if start == (256,0):
-        print "drawing rectangle "+str((x,y))
-      draw.rectangle([(x,y), (x+sub_width-1, y+sub_height-1)], fill=randcolor())
-      if sub_width == 256 and sub_height == 128:
-        counts[256]+=1
-      elif sub_width == 64 and sub_height == 64:
-        counts[64]+=1
-      elif sub_width == 32 and sub_height == 16:
-        counts[32]+=1
-      elif sub_width == 8 and sub_height == 8:
-        counts[8]+=1
-      else:
-        sys.stderr.write("Error: unexpected block size: "+str(sub_width)+"x"
-          +str(sub_height))
-      drawblocks(draw, (x,y), (sub_width,sub_height), counts)
-      if x == 256 and y == 0:
-        print "called drawblocks(draw, ("+str(x)+", "+str(y)+"), (" \
-          +str(sub_width)+", "+str(sub_height)+")"
+      if start == (0,0):
+        print "drawing rectangle pos:"+str((x,y))+"\tsize: " \
+          +str((x+sub_width-1, y+sub_height-1))
+      #if start == (0,0):
+      overlay = Image.new("RGB", image.size, color=(0,0,0))
+      mask = Image.new("L", image.size, color=0)
+      overdraw = ImageDraw.Draw(overlay)
+      maskdraw = ImageDraw.Draw(mask)
+      overdraw.rectangle([(x,y), (x+sub_width-1, y+sub_height-1)],
+        fill=randcolor())
+      maskdraw.rectangle([(x,y), (x+sub_width-1, y+sub_height-1)],
+        fill=(256/level)-1)
+      image.paste(overlay, (0,0), mask)
+      drawblocks(image, level*2, (x,y), (sub_width,sub_height))
       x += sub_width
-      # print "x is now "+str(x)
     y += sub_height
     x = xstart
-    # x = 0
   return True
 
 if __name__ == "__main__":
