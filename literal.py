@@ -10,7 +10,7 @@ import fastareader
 OPT_DEFAULTS = {'size':'512x512', 'verbose':True,
   'A':'0,255,0', 'T':'255,0,0', 'G':'255,255,255', 'C':'0,0,255'}
 USAGE = "%(prog)s [options] genome.fasta"
-DESCRIPTION = """Convert DNA sequence into an image by representing each base
+DESCRIPTION = """Convert DNA sequence into a PNG image by representing each base
   with one colored pixel."""
 EPILOG = """"""
 
@@ -22,12 +22,14 @@ def main():
 
   parser.add_argument('fasta', metavar='genome.fasta',
     help="""Input sequence. Can be in FASTA format or a plain text file
-      containing only sequence.""")
+      containing only the sequence. Any non-ATGC characters (case-insensitive)
+      will be skipped.""")
   parser.add_argument('-s', '--size',
-    help="""The output image size, in pixels, e.g. "640x480". Default:
-      %(default)s""")
+    help="""The output image size, in pixels, in the format "widthxheight", e.g.
+      "640x480". If the sequence is larger than the number of pixels in the
+      image, it will be cut off. Default size: %(default)s""")
   parser.add_argument('-o', '--outfile', metavar='image.png',
-    help="""Output filename (must end in .png!). Overrides the default, which is
+    help="""Output filename. Overrides the default, which is
       to use the input filename base plus .png.""")
   parser.add_argument('-d', '--display', action='store_true',
     help="""Display the image instead of saving it.""")
@@ -63,8 +65,6 @@ def main():
 
   if not args.display:
     outfile = args.outfile if args.outfile else outfile_name(args.fasta)
-    if not outfile.endswith('.png'):
-      fail("Error: output filename must end in .png")
     if os.path.exists(outfile) and not args.clobber:
       fail('Error: Output filename already taken: "%s"' % outfile)
 
@@ -93,7 +93,7 @@ def main():
   if args.display:
     image.show()
   else:
-    image.save(outfile)
+    image.save(outfile, 'PNG')
 
 
 
