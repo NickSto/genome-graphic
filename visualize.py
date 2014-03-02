@@ -38,9 +38,9 @@ recommended as the resulting image will be much better laid out."""
     if layers[-1] == False:
       break
     # opacity = 256/2**level                        # opacity #1
-    # opacity = 256/2**(level-1)                    # opacity #2
+    opacity = 256/2**(level-1)                    # opacity #2
     # opacity = 256*(level/2)/2**(level-1)          # opacity #3
-    opacity = 256*(level/float(2**level))         # opacity #4
+    # opacity = 256*(level/float(2**level))         # opacity #4
     print "opacity: "+str(int(opacity/2.56))+"%"
     mask = Image.new("L", size, color=opacity)
     image.paste(layers[-1], (0,0), mask)
