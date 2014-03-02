@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# copyright Nicholas Stoler
 from __future__ import division
 import os
 import sys
@@ -7,7 +8,7 @@ import argparse
 import fastareader
 
 OPT_DEFAULTS = {'size':'512x512', 'verbose':True,
-  'A':'254,0,0', 'T':'254,254,0', 'G':'0,0,254', 'C':'0,254,0'}
+  'A':'0,255,0', 'T':'255,0,0', 'G':'255,255,255', 'C':'0,0,255'}
 USAGE = "%(prog)s [options] genome.fasta"
 DESCRIPTION = """Convert DNA sequence into an image by representing each base
   with one colored pixel."""
@@ -35,7 +36,6 @@ def main():
       throwing an error (the default).""")
   parser.add_argument('-v', '--verbose', action='store_true',
     help="""Verbose mode. On by default.""")
-  # note: verbose can optionally take an argument to set a verbosity level
   parser.add_argument('-q', '--quiet', action='store_false', dest='verbose',
     help="""Quiet mode.""")
   group = parser.add_argument_group('Color customization', """Use these options
