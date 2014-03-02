@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# copyright Nicholas Stoler
 from __future__ import division
 import os
 import sys

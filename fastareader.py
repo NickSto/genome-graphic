@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# copyright Nicholas Stoler
 import os
 __version__ = '0.8'
 

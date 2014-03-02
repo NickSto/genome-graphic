@@ -1,10 +1,38 @@
 <tool id="visualdna" name="DNA visualizer" version="0.1">
   <description>Visualize DNA with colored pixels.</description>
-  <command interpreter="python">literal.py $input -o $output -s ${width}x${height} </command>
+  <command interpreter="python">literal.py $input -o $output -c -s ${width}x${height}
+  #if $colors.custom:
+    -A $colors.AR,$colors.AG,$colors.AB -T $colors.TR,$colors.TG,$colors.TB -G $colors.GR,$colors.GG,$colors.GB -C $colors.CR,$colors.CG,$colors.CB 
+  #end if
+  </command>
   <inputs>
-    <param name="input" type="data" format="fasta" label="Input sequence" />
-    <param name="width" type="integer" value="512" min="512" label="Output image width" help="in pixels" />
-    <param name="height" type="integer" value="512" min="512" label="Output image height" help="in pixels" />
+    <param name="input" type="data" format="fasta,text" label="Input sequence" />
+    <param name="width" type="integer" value="512" label="Output image width" help="in pixels" />
+    <param name="height" type="integer" value="512" label="Output image height" help="in pixels" />
+    <conditional name="colors">
+      <param name="custom" type="select" label="Base colors">
+        <option value="" selected="True">Use default colors</option>
+        <option value="true">Use custom colors</option>
+      </param>
+      <when value="">
+        <!-- do nothing -->
+      </when>
+      <when value="true">
+        <!-- 'A':'0,255,0', 'T':'255,0,0', 'G':'255,255,255', 'C':'0,0,255' -->
+        <param name="AR" type="integer" value="0" label="A red value" />
+        <param name="AG" type="integer" value="255" label="A green value" />
+        <param name="AB" type="integer" value="0" label="A blue value" />
+        <param name="TR" type="integer" value="255" label="T red value" />
+        <param name="TG" type="integer" value="0" label="T green value" />
+        <param name="TB" type="integer" value="0" label="T blue value" />
+        <param name="GR" type="integer" value="255" label="G red value" />
+        <param name="GG" type="integer" value="255" label="G green value" />
+        <param name="GB" type="integer" value="255" label="G blue value" />
+        <param name="CR" type="integer" value="0" label="C red value" />
+        <param name="CG" type="integer" value="0" label="C green value" />
+        <param name="CB" type="integer" value="255" label="C blue value" />
+      </when>
+    </conditional>
   </inputs>
   <outputs>
     <data name="output" format="png"/>
