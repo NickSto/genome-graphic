@@ -1,11 +1,18 @@
 <tool id="dnagram" name="DNA graphic" version="0.1">
+
+  <requirements>
+    <requirement type="package" version="1.1.7">pil</requirement>
+  </requirements>
+
   <description>Create a graphic from a DNA sequence</description>
-  <command interpreter="python">visualize.py $input $output $size
-  </command>
+  
+  <command interpreter="python">visualize.py $input $output $size</command>
+  
   <inputs>
     <param name="input" type="data" format="fasta,text" label="Input sequence" />
     <param name="size" type="integer" value="512" min="0" max="16384" label="Output image width (pixels)" help="Height will be the same. A power of 2 is highly recommended." />
   </inputs>
+  
   <outputs>
     <data name="output" format="png"/>
   </outputs>

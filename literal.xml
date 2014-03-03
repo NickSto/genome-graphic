@@ -1,10 +1,17 @@
 <tool id="visualdna" name="DNA visualizer" version="0.1">
+
+  <requirements>
+    <requirement type="package" version="1.1.7">pil</requirement>
+  </requirements>
+
   <description>Visualize DNA with colored pixels.</description>
+
   <command interpreter="python">literal.py $input -o $output -c -s ${width}x${height}
   #if $colors.custom:
     -b $colors.background -G $colors.G -C $colors.C -A $colors.A -T $colors.T 
   #end if
   </command>
+
   <inputs>
     <param name="input" type="data" format="fasta,text" label="Input sequence" />
     <param name="width" type="integer" value="512" min="0" max="16384" label="Output image width" help="in pixels (max 16384)" />
@@ -37,6 +44,7 @@
       </when>
     </conditional>
   </inputs>
+
   <outputs>
     <data name="output" format="png"/>
   </outputs>

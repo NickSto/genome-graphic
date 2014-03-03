@@ -1,0 +1,5 @@
+<tool_dependency>
+    <package name="pil" version="1.1.7">
+        <repository toolshed="http://toolshed.g2.bx.psu.edu" name="package_pil_1_1_7" owner="iuc" changeset_revision="c19e34aa42a2" />
+    </package>
+</tool_dependency>
