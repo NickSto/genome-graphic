@@ -2,7 +2,7 @@
   <description>Visualize DNA with colored pixels.</description>
   <command interpreter="python">literal.py $input -o $output -c -s ${width}x${height}
   #if $colors.custom:
-    -G $colors.G -C $colors.C -A $colors.A -T $colors.T 
+    -b $colors.background -G $colors.G -C $colors.C -A $colors.A -T $colors.T 
   #end if
   </command>
   <inputs>
@@ -29,6 +29,9 @@
           <validator type="regex" message='Color must be in the form of "R,G,B"'>^[0-9]+,[0-9]+,[0-9]+$</validator>
         </param>
         <param name="T" type="text" value="255,0,0" label="T RGB value" help="Three numbers 0 through 255, separated by commas (no spaces)">
+          <validator type="regex" message='Color must be in the form of "R,G,B"'>^[0-9]+,[0-9]+,[0-9]+$</validator>
+        </param>
+        <param name="background" type="text" value="255,255,255" label="background RGB value" help="Three numbers 0 through 255, separated by commas (no spaces)">
           <validator type="regex" message='Color must be in the form of "R,G,B"'>^[0-9]+,[0-9]+,[0-9]+$</validator>
         </param>
       </when>

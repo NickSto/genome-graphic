@@ -6,7 +6,7 @@ import Image
 import argparse
 import fastareader
 
-OPT_DEFAULTS = {'size':'512x512', 'verbose':True,
+OPT_DEFAULTS = {'size':'512x512', 'verbose':True, 'background':'255,255,255',
   'A':'0,255,0', 'T':'255,0,0', 'G':'255,255,255', 'C':'0,0,255'}
 USAGE = "%(prog)s [options] genome.fasta"
 DESCRIPTION = """Convert DNA sequence into a PNG image by representing each base
@@ -40,8 +40,10 @@ def main():
   parser.add_argument('-q', '--quiet', action='store_false', dest='verbose',
     help="""Quiet mode.""")
   group = parser.add_argument_group('Color customization', """Use these options
-    to use custom colors for bases. Specify with a comma-delimited RGB value
-    like "100,150,10".""")
+    to use custom colors for the background and the bases. Specify with a
+    comma-delimited RGB value like "100,150,10".""")
+  group.add_argument('-b', '--background', metavar='R,G,B',
+    help="""default: %(default)s""")
   group.add_argument('-A', metavar='R,G,B',
     help="""default: %(default)s""")
   group.add_argument('-T', metavar='R,G,B',
@@ -54,7 +56,7 @@ def main():
   args = parser.parse_args()
 
   try:
-    size = parse_size(args.size)
+    size = parse_int_str(args.size, delim='x', num_ints=2)
   except ValueError:
     parser.print_help()
     fail('\nError: Invalid size string "%s".' % args.size)
@@ -67,13 +69,15 @@ def main():
     if os.path.exists(outfile) and not args.clobber:
       fail('Error: Output filename already taken: "%s"' % outfile)
 
-  colors = {}
-  colors['A'] = parse_rgb(args.A)
-  colors['T'] = parse_rgb(args.T)
-  colors['G'] = parse_rgb(args.G)
-  colors['C'] = parse_rgb(args.C)
+  background = parse_int_str(args.background)
 
-  image = Image.new('RGB', size, 'white')
+  colors = {}
+  colors['A'] = parse_int_str(args.A)
+  colors['T'] = parse_int_str(args.T)
+  colors['G'] = parse_int_str(args.G)
+  colors['C'] = parse_int_str(args.C)
+
+  image = Image.new('RGB', size, background)
   pixels = image.load()
 
   done = False
@@ -95,26 +99,16 @@ def main():
     image.save(outfile, 'PNG')
 
 
-
-def parse_size(size_str):
-  """Parse size string, return a tuple of (width, height).
-  Accepts size strings in the format "640x480".
+def parse_int_str(string, delim=',', num_ints=3):
+  """Parse string of delimited ints, return them in a tuple.
+  Checks that they are ints, they are delimited by "delim", and there are
+  "num_ints" of them.
   If not valid, raises ValueError."""
-  size = map(int, size_str.split('x'))
-  if len(size) != 2:
+  ints = map(int, string.split(delim))
+  if len(ints) != num_ints:
     raise ValueError
   else:
-    return tuple(size)
-
-
-def parse_rgb(rgb_str):
-  """Parse RGB string, return a tuple of (R, G, B).
-  If not valid, raises ValueError."""
-  rgb = map(int, rgb_str.split(','))
-  if len(rgb) != 3:
-    raise ValueError
-  else:
-    return tuple(rgb)
+    return tuple(ints)
 
 
 def outfile_name(infilename):
