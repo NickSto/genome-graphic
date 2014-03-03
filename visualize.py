@@ -46,7 +46,7 @@ recommended as the resulting image will be much better laid out."""
     image.paste(layers[-1], (0,0), mask)
 
   if len(sys.argv) > 2:
-    image.save(sys.argv[2])
+    image.save(sys.argv[2], 'PNG')
   else:
     image.show()
 
