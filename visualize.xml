@@ -4,7 +4,7 @@
   </command>
   <inputs>
     <param name="input" type="data" format="fasta,text" label="Input sequence" />
-    <param name="size" type="integer" value="512" min="0" max="16384" label="Output image width (pixels)" help="Height will be the same. A power of 2 is recommended." />
+    <param name="size" type="integer" value="512" min="0" max="16384" label="Output image width (pixels)" help="Height will be the same. A power of 2 is highly recommended." />
   </inputs>
   <outputs>
     <data name="output" format="png"/>
@@ -17,7 +17,7 @@
 **What it does**
 
 This tool creates a graphic representing a DNA sequence.  
-The graphic is derived from the sequence, but is not a literal representation. It is intended to be an aesthetic visual based on the sequence. Even a small change in the input sequence will result in a drastically different image. See [here](http://nstoler.com/misc/yourgenome.html) for a full description and rationale.
+The graphic is derived from the sequence, but is not a literal representation. It is intended to be an aesthetic visual based on the sequence. Even a small change in the input sequence will result in a drastically different image. See here for a full description and rationale: http://nstoler.com/misc/yourgenome.html
 
   </help>
 
